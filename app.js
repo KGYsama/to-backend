@@ -14,7 +14,7 @@ const connection = mysql.createConnection({
     user: 'root',
     database: 'mydb'
   });
-
+const port = process.env.PORT || 3333;
 
 app.post('/register',jsonParser, function (req, res, next) {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
@@ -210,6 +210,6 @@ app.post('/StatusUpdate',jsonParser, function (req, res, next) {
     );
 });
 
-app.listen(3333, function () {
-  console.log('CORS-enabled web server listening on port 3333')
+app.listen(port, function () {
+  console.log(`Example app listening on port ${port}`)
 })
