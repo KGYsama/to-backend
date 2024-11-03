@@ -3,16 +3,18 @@ var cors = require('cors')
 var app = express()
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcryptjs')
 const saltRounds = 10
 var jwt = require('jsonwebtoken')
 const secret = 'Full-stack-web'
 app.use(cors())
+require('dotenv').config()
 const mysql = require('mysql2')
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    database: 'mydb'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE
   });
 const port = process.env.PORT || 3333;
 
@@ -103,7 +105,7 @@ app.post('/barcodeid',jsonParser, function (req, res, next) {
 app.post('/barcode/check', jsonParser, function (req, res, next) {
     const { bookingcheck } = req.body;
 
-    // ค้นหาในฐานข้อมูลเพื่อตรวจสอบว่ามีการจองในวันที่เลือกหรือไม่
+   
     connection.execute(
         'SELECT * FROM barcode WHERE bookingDate = ?',
         [bookingcheck],
@@ -112,12 +114,12 @@ app.post('/barcode/check', jsonParser, function (req, res, next) {
                 res.json({ status: 'error', message: err });
                 return;
             }
-            // ตรวจสอบว่ามีข้อมูลที่ตรงกับ bookingDate ที่ร้องขอหรือไม่
+         
             if (results.length > 0 ) {
-                // ถ้ามีการจองในวันที่เลือกแล้ว
+             
                 res.json({ status: 'exists', message: 'This date has already been booked' });
             } else {
-                // ถ้ายังไม่มีการจองในวันที่เลือก
+               
                 res.json({ status: 'ok', message: 'This date is available' });
             }
         }
@@ -189,7 +191,7 @@ app.post('/StatusUpdate',jsonParser, function (req, res, next) {
   app.post('/barcode/getCheck', jsonParser, function (req, res, next) {
     const { bookingcheck } = req.body;
 
-    // ค้นหาในฐานข้อมูลเพื่อตรวจสอบว่ามีการจองในวันที่เลือกหรือไม่
+  
     connection.execute(
         'SELECT * FROM barcode WHERE bookingDate = ?',
         [bookingcheck],
@@ -198,12 +200,12 @@ app.post('/StatusUpdate',jsonParser, function (req, res, next) {
                 res.json({ status: 'error', message: err });
                 return;
             }
-            // ตรวจสอบว่ามีข้อมูลที่ตรงกับ bookingDate ที่ร้องขอหรือไม่
+          
             if (results.length > 0) {
-                // ถ้ามีการจองในวันที่เลือกแล้ว
+            
                 res.json({ status: 'exists'});
             } else {
-                // ถ้ายังไม่มีการจองในวันที่เลือก
+              
                 res.json({ status: 'ok'});
             }
         }
