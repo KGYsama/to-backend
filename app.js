@@ -1,5 +1,5 @@
 var express = require('express')
-var cors = require('cors')
+const cors = require('cors');
 var app = express()
 var bodyParser = require('body-parser')
 var jsonParser = bodyParser.json()
@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 const saltRounds = 10
 var jwt = require('jsonwebtoken')
 const secret = 'Full-stack-web'
-app.use(cors())
+app.use(cors({ origin: 'http://18.142.254.159:3000' }))
 require('dotenv').config()
 const mysql = require('mysql2')
 const connection = mysql.createConnection({
