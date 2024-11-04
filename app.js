@@ -18,73 +18,73 @@ const connection = mysql.createConnection({
   });
 const port = process.env.PORT || 3333;
 
-app.post('/register',jsonParser, function (req, res, next) {
+app.post('/register', jsonParser, function (req, res, next) {
     bcrypt.hash(req.body.password, saltRounds, function(err, hash) {
+        if (err) {
+            return res.status(500).json({ status: 'error', message: 'Error hashing password' });
+        }
         connection.execute(
             'INSERT INTO users (email, password, fname, lname) VALUES (?, ?, ?, ?)',
-            [req.body.email,hash, req.body.fname, req.body.lname],
+            [req.body.email, hash, req.body.fname, req.body.lname],
             function(err, results, fields) {
-                if(err){
-                    res.json({status: 'error',massage: err})
-                    return
+                if (err) {
+                    return res.status(500).json({ status: 'error', message: err });
                 }
-              res.json({status: 'ok'})
+                return res.json({ status: 'ok' });
             }
-          );
+        );
     });
-
-})
-app.post('/login',jsonParser, function (req, res, next){
+});
+app.post('/login', jsonParser, function (req, res, next) {
     connection.execute(
         'SELECT * FROM users WHERE email=?',
         [req.body.email],
         function(err, users, fields) {
-            if(err) {
-            res.json({status: 'error',massage: err})
-            return}
-            if(users.length == 0) {
-            res.json({status : 'error', massage: 'no user found'})
-            return}
-            
+            if (err) {
+                return res.status(500).json({ status: 'error', message: err });
+            }
+            if (users.length == 0) {
+                return res.json({ status: 'error', message: 'no user found' });
+            }
+
             bcrypt.compare(req.body.password, users[0].password, function(err, isLogin) {
-                if(isLogin){
+                if (err) {
+                    return res.status(500).json({ status: 'error', message: err });
+                }
+                if (isLogin) {
                     var token = jwt.sign({ email: users[0].email }, secret, { expiresIn: '1h' });
-                    res.json({status: 'ok', massage: 'Login success',token})
-                }else{
-                    res.json({status: 'error', massage: 'Login failed'})
+                    return res.json({ status: 'ok', message: 'Login success', token });
+                } else {
+                    return res.json({ status: 'error', message: 'Login failed' });
                 }
             });
         }
-      );
-})
+    );
+});
 
-app.post('/authen',jsonParser, function (req, res, next){
-try{
-    const token = req.headers.authorization.split(' ')[1]
-    var decoded = jwt.verify(token, secret)
-    res.json({status: 'ok', decoded})
-    res.json({decoded})
-}catch(err){
-    res.json({status: 'error',massage: err.massage})
-}
 
-})
+app.post('/authen', jsonParser, function (req, res, next) {
+    try {
+        const token = req.headers.authorization.split(' ')[1];
+        var decoded = jwt.verify(token, secret);
+        return res.json({ status: 'ok', decoded });
+    } catch (err) {
+        return res.status(401).json({ status: 'error', message: 'Unauthorized' });
+    }
+});
 
-app.post('/barcode',jsonParser, function (req, res, next) {
-    {   connection.execute(
-            'INSERT INTO barcode (barcodePass, bookingDate) VALUES (?, ?)',
-            [req.body.barcodePass, req.body.bookingDate],
-            function(err, results, fields) {
-                if(err){
-                    res.json({status: 'error',massage: err})
-                    return
-                }
-              res.json({status: 'ok'})
+app.post('/barcode', jsonParser, function (req, res, next) {
+    connection.execute(
+        'INSERT INTO barcode (barcodePass, bookingDate) VALUES (?, ?)',
+        [req.body.barcodePass, req.body.bookingDate],
+        function(err, results, fields) {
+            if (err) {
+                return res.json({ status: 'error', message: err });
             }
-          );
-    };
-
-})
+            return res.json({ status: 'ok' });
+        }
+    );
+});
 
 app.post('/barcodeid',jsonParser, function (req, res, next) {
     {   connection.execute(
